@@ -86,7 +86,7 @@
     <section class="">
       <div class="flex flex-wrap items-center gap-2 text-sm">
         <span class="subtle">Filter:</span>
-        <button data-filter="all" class="filter-btn pill">Alles</button>
+        <button data-filter="all" class="filter-btn pill active">Alles</button>
         <button data-filter="public" class="filter-btn pill">Publiek</button>
         <button data-filter="private" class="filter-btn pill">Privé</button>
       </div>
@@ -108,7 +108,7 @@
 
   <script>
     const links = [
-      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijerk", client: "NTP", tags: ["scan", "depot"], visibility: "public" },
+      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijkerk", client: "NTP", tags: ["scan", "depot"], visibility: "public" },
       { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", client: "NTP", tags: ["scan"], visibility: "public" },
       { id: "huizen-1", title: "Huizen – Stadenlande 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_1", client: "NTP", tags: ["scan", "huizen"], visibility: "public" },
       { id: "huizen-2", title: "Huizen – Stadenlande 2", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_2", client: "NTP", tags: ["scan", "huizen"], visibility: "public" },
@@ -173,7 +173,7 @@
         titleWrap.append(h3);
 
         const chip = document.createElement('span');
-        chip.textContent = (item.visibility === 'private') ? 'Privé' : 'Publiek';
+        chip.textContent = 'Publiek';
         chip.className = 'chip';
 
         header.append(titleWrap, chip);
@@ -202,7 +202,7 @@
         btnRow.className = 'mt-1 grid grid-cols-3 gap-2';
 
         const openBtn = document.createElement('a');
-        openBtn.href = item.url; openBtn.target = '_blank'; openBtn.rel = 'noopener';
+        openBtn.href = item.url; openBtn.target = '_blank'; openBtn.rel = 'noopener noreferrer';
         openBtn.textContent = 'Openen';
         openBtn.className = 'btn btn-primary text-center';
 
@@ -230,18 +230,32 @@
       render(filtered);
     }
 
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeFilter = btn.dataset.filter;
-        apply();
-      });
-    });
+    // QR-overlay functie die eerder ontbrak
+    function toonScanCode(url, title) {
+      let overlay = document.getElementById('qrOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'qrOverlay';
+        overlay.className = 'fixed inset-0 bg-black/60 grid place-items-center p-6 z-50';
+        overlay.innerHTML = `
+          <div class="glass rounded-2xl p-6 w-full max-w-sm border border-white/10">
+            <div class="flex items-start justify-between mb-4">
+              <h2 class="font-semibold" id="qrTitle"></h2>
+              <button id="qrClose" class="btn">Sluiten</button>
+            </div>
+            <canvas id="qrCanvas" class="mx-auto"></canvas>
+            <p class="mt-3 text-xs subtle text-center">Scan met je telefoon om te openen.</p>
+          </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        overlay.querySelector('#qrClose').addEventListener('click', () => overlay.remove());
+      }
+      overlay.querySelector('#qrTitle').textContent = title || 'Koppeling';
+      new QRious({ element: overlay.querySelector('#qrCanvas'), value: url, size: 240 });
+    }
 
-    if (searchEl) searchEl.addEventListener('input', apply);
-    if (sortEl) sortEl.addEventListener('change', apply);
-
-    document.getElementById('copyAll').addEventListener('click', async (e) => { e.preventDefault(); await kopieerAlles(); });
-    document.getElementById('copyAllTop')?.addEventListener('click', async () => { await kopieerAlles(); });
-    async function kopieerAlles(){ const text = links.map(l => `${l.title}: ${l.url}`).join('\n'); await navigator.clipboard.writeText(text); toonMelding('Alle koppelingen gekopieerd naar het klembord'); }
+    // Init: render direct na laden
+    document.addEventListener('DOMContentLoaded', apply);
+  </script>
+</body>
+</html>
