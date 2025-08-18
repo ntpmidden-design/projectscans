@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NTP Xgrid – Projectlinks</title>
+  <meta name="description" content="Eenvoudige pagina om links naar Xgrid-projecten te delen." />
+  <link rel="icon" href="Logo_NTP.png" />
+  <!-- Fonts + Tailwind via CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { height: 100%; }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    /* Donker thema met cyaan accenten */
+    body {
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(0,174,239,0.18), rgba(0,0,0,0) 40%),
+        radial-gradient(900px 500px at 85% 0%, rgba(124,58,237,0.12), rgba(0,0,0,0) 35%),
+        #0b1220;
+      color: #E6EEF7;
+    }
+    .glass { backdrop-filter: saturate(140%) blur(8px); background: rgba(255,255,255,0.04); }
+    .card { @apply rounded-2xl border border-white/10 overflow-hidden glass shadow-lg transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-cyan-500/20; }
+    .btn { @apply px-3 py-1.5 rounded-xl border border-white/10 text-sm glass hover:bg-white/10; }
+    .btn-primary { @apply bg-cyan-500/20 border-cyan-400/40 text-cyan-200 hover:bg-cyan-500/30; }
+    .chip { @apply text-[11px] px-2 py-0.5 rounded-full border border-white/15; }
+    .thumb { @apply w-full h-40 grid place-items-center text-lg md:text-xl font-semibold tracking-wide text-white; background-image: linear-gradient(135deg, rgba(0,174,239,0.25), rgba(124,58,237,0.18)); }
+    .pill { @apply btn; }
+    .pill.active { @apply ring-2 ring-cyan-400/60; }
+    .topbar { @apply sticky top-0 z-30 border-b border-white/10; background: linear-gradient(to bottom, rgba(11,18,32,0.9), rgba(11,18,32,0.6)); backdrop-filter: blur(10px); }
+    .headline { @apply text-3xl md:text-4xl font-extrabold; background: linear-gradient(90deg,#8bdcff,#ffffff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .subtle { color: #9DB3C7; }
+  </style>
+</head>
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <img src="Logo_NTP.png" alt="NTP" class="h-8 w-auto" />
+        <span class="text-base md:text-lg font-semibold text-cyan-300">NTP Xgrid – Projectlinks</span>
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <input id="search" type="search" placeholder="Zoek projecten…" class="w-64 max-w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-sky-50 placeholder:subtle focus:outline-none focus:ring-2 focus:ring-cyan-400/60" />
+        <select id="sort" class="px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-sm">
+          <option value="recent">Meest recent</option>
+          <option value="az">Alfabetisch oplopend</option>
+          <option value="za">Alfabetisch aflopend</option>
+        </select>
+        <a href="#projecten" class="btn btn-primary">Bekijk projecten</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <header class="max-w-6xl mx-auto px-6 pt-10 pb-8">
+    <div class="grid md:grid-cols-5 gap-6 items-center">
+      <div class="md:col-span-3">
+        <h1 class="headline">Projectlinks voor geometrie</h1>
+        <p class="mt-3 text-sm md:text-base subtle">Snelle toegang tot projectviewers (zoals Xgrid). Privé‑projecten tonen de toegangscode en bieden een scan‑code om te delen, knoppen om koppelingen te kopiëren en functies om te zoeken en te sorteren.</p>
+        <div class="mt-5 flex items-center gap-2 text-xs">
+          <span class="chip">🔓 Publiek</span>
+          <span class="chip">🔒 Privé</span>
+          <span class="chip">Scan‑code • Link kopiëren</span>
+        </div>
+        <div class="mt-6 flex items-center gap-2">
+          <a href="#projecten" class="btn btn-primary">Naar projecten</a>
+          <button id="copyAllTop" class="btn">Kopieer alle koppelingen</button>
+        </div>
+      </div>
+      <div class="md:col-span-2">
+        <div class="rounded-3xl border border-white/10 glass p-5">
+          <div class="thumb rounded-2xl">Projectoverzicht</div>
+          <div class="mt-4 text-xs subtle">NTP • Xgrid projectlinks</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="projecten" class="max-w-6xl mx-auto px-6 pb-12">
+    <section class="">
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <span class="subtle">Filter:</span>
+        <button data-filter="all" class="filter-btn pill">Alles</button>
+        <button data-filter="public" class="filter-btn pill">Publiek</button>
+        <button data-filter="private" class="filter-btn pill">Privé</button>
+      </div>
+
+      <ul id="list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5"></ul>
+      <div id="empty" class="hidden text-center subtle py-16">Geen resultaten…</div>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/10">
+    <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px] subtle">
+      <p>© NTP • Eenvoudig koppelingen delen • <a class="underline-offset-2 hover:underline" href="#" id="copyAll">Kopieer alle koppelingen</a></p>
+      <p>Tip: voeg deze pagina toe als tabblad in Teams.</p>
+    </div>
+  </footer>
+
+  <!-- Bibliotheek voor scan‑code -->
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <!-- Meldingen -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden px-3 py-2 rounded-xl bg-black/80 text-white text-sm shadow">Gekopieerd naar het klembord</div>
+
+  <script>
+    // ===== Gegevens
+    const links = [
+      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijerk", client: "NTP", tags: ["scan", "depot"], visibility: "private", secret: "NTP2025" },
+      { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", client: "NTP", tags: ["scan"], visibility: "private", secret: "NTP2025" },
+      { id: "huizen-1", title: "Huizen – Stadenlande 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_1", client: "NTP", tags: ["scan", "huizen"], visibility: "private", secret: "NTP2025" },
+      { id: "huizen-2", title: "Huizen – Stadenlande 2", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_2", client: "NTP", tags: ["scan", "huizen"], visibility: "private", secret: "NTP2025" },
+      { id: "doetinchem-1", title: "Doetinchem 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", client: "NTP", tags: ["scan", "doetinchem"], visibility: "private", secret: "NTP2025" }
+    ];
+
+    const listEl = document.getElementById('list');
+    const emptyEl = document.getElementById('empty');
+    const searchEl = document.getElementById('search');
+    const sortEl = document.getElementById('sort');
+    const toastEl = document.getElementById('toast');
+
+    let activeFilter = 'all';
+
+    const toonMelding = (msg) => { toastEl.textContent = msg; toastEl.classList.remove('hidden'); setTimeout(() => toastEl.classList.add('hidden'), 1200); };
+
+    function komtOvereenMetZoekopdracht(item, q) {
+      if (!q) return true;
+      const hay = [item.title, item.client, ...(item.tags||[])].join(' ').toLowerCase();
+      return hay.includes(q.toLowerCase());
+    }
+
+    function komtOvereenMetFilter(item) {
+      if (activeFilter === 'all') return true;
+      return (item.visibility || 'public') === activeFilter;
+    }
+
+    function sorteer(items) {
+      const mode = sortEl ? sortEl.value : 'recent';
+      if (mode === 'az') return [...items].sort((a,b) => a.title.localeCompare(b.title));
+      if (mode === 'za') return [...items].sort((a,b) => b.title.localeCompare(a.title));
+      return [...items].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    }
+
+    function render(items) {
+      listEl.innerHTML = '';
+      if (!items.length) { emptyEl.classList.remove('hidden'); return; }
+      emptyEl.classList.add('hidden');
+
+      const gesorteerd = sorteer(items);
+
+      gesorteerd.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = 'card flex flex-col';
+
+        // Thumbnail met leesbaar label (geen afkortingen)
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        const label = (item.title.split(/[–-]/)[0] || item.title).trim();
+        thumb.textContent = label || 'Project';
+        li.appendChild(thumb);
+
+        const content = document.createElement('div');
+        content.className = 'p-4 flex flex-col gap-3 flex-1';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'flex items-start justify-between gap-2';
+        const titleWrap = document.createElement('div');
+        titleWrap.className = 'flex items-center gap-2';
+        const lock = document.createElement('span');
+        lock.textContent = (item.visibility === 'private') ? '🔒' : '🔓';
+        const h3 = document.createElement('h3');
+        h3.className = 'font-semibold leading-snug';
+        h3.textContent = item.title;
+        titleWrap.append(lock, h3);
+
+        const chip = document.createElement('span');
+        chip.textContent = (item.visibility === 'private') ? 'Privé' : 'Publiek';
+        chip.className = 'chip';
+
+        header.append(titleWrap, chip);
+        content.appendChild(header);
+
+        if (item.client) {
+          const meta = document.createElement('div');
+          meta.className = 'text-xs subtle';
+          meta.textContent = item.client;
+          content.appendChild(meta);
+        }
+
+        if (item.tags?.length) {
+          const tags = document.createElement('div');
+          tags.className = 'flex flex-wrap gap-1';
+          item.tags.forEach(t => {
+            const s = document.createElement('span');
+            s.textContent = `#${t}`;
+            s.className = 'text-[11px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-200 border border-cyan-400/20';
+            tags.appendChild(s);
+          });
+          content.appendChild(tags);
+        }
+
+        // Acties
+        const btnRow = document.createElement('div');
+        btnRow.className = 'mt-1 grid grid-cols-3 gap-2';
+
+        const openBtn = document.createElement('a');
+        openBtn.href = item.url; openBtn.target = '_blank'; openBtn.rel = 'noopener';
+        openBtn.textContent = 'Openen';
+        openBtn.className = 'btn btn-primary text-center';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.textContent = 'Kopieer koppeling';
+        copyBtn.className = 'btn';
+        copyBtn.addEventListener('click', async () => { await navigator.clipboard.writeText(item.url); toonMelding('Koppeling gekopieerd naar het klembord');});
+
+        const qrBtn = document.createElement('button');
+        qrBtn.textContent = 'Scan‑code';
+        qrBtn.className = 'btn';
+        qrBtn.addEventListener('click', () => toonScanCode(item.url, item.title));
+
+        btnRow.append(openBtn, copyBtn, qrBtn);
+        content.appendChild(btnRow);
+
+        // Toegangscode tonen/kopiëren
+        if (item.visibility === 'private' && item.secret) {
+          const secret = document.createElement('div');
+          secret.className = 'mt-2 text-xs subtle';
+          secret.innerHTML = `Toegangscode: <button class="underline underline-offset-2" title="Klik om te kopiëren">${item.secret}</button>`;
+          secret.querySelector('button').addEventListener('click', async () => { await navigator.clipboard.writeText(item.secret); toonMelding('Toegangscode gekopieerd naar het klembord'); });
+          content.appendChild(secret);
+        }
+
+        li.appendChild(content);
+        listEl.appendChild(li);
+      });
+    }
+
+    function apply() {
+      const q = (searchEl && searchEl.value) ? searchEl.value.trim() : '';
+      const filtered = links.filter(it => komtOvereenMetZoekopdracht(it, q) && komtOvereenMetFilter(it));
+      render(filtered);
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        apply();
+      });
+    });
+
+    if (searchEl) searchEl.addEventListener('input', apply);
+    if (sortEl) sortEl.addEventListener('change', apply);
+
+    // Alle koppelingen kopiëren (hero & footer)
+    document.getElementById('copyAll').addEventListener('click', async (e) => { e.preventDefault(); await kopieerAlles(); });
+    document.getElementById('copyAllTop')?.addEventListener('click', async () => { await kopieerAlles(); });
+    async function kopieerAlles(){ const text = links.map(l => `${l.title}: ${l.url}${l.secret?` (toegangscode: ${l.secret})`:''}`).join('\n'); await navigator.clipboard.writeText(text); toonMelding('Alle koppelingen gekopieerd naar het klembord'); }
+
+    // Scan‑code (voorheen QR)
+    function toonScanCode(url, title) {
+      let overlay = document.getElementById('qrOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'qrOverlay';
+        overlay.className = 'fixed inset-0 bg-black/60 grid place-items-center p-6 z-50';
+        overlay.innerHTML = `
+          <div class=\"glass rounded-2xl p-6 w-full max-w-sm border border-white/10\">\n            <div class=\"flex items-start justify-between mb-4\">\n              <h2 class=\"font-semibold\" id=\"qrTitle\"></h2>\n              <button id=\"qrClose\" class=\"btn\">Sluiten</button>\n            </div>\n            <canvas id=\"qrCanvas\" class=\"mx-auto\"></canvas>\n            <p class=\"mt-3 text-xs subtle text-center\">Scan met je telefoon om te openen.</p>\n          </div>`;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        overlay.querySelector('#qrClose').addEventListener('click', () => overlay.remove());
+      }
+      overlay.querySelector('#qrTitle').textContent = title || 'Koppeling';
+      new QRious({ element: overlay.querySelector('#qrCanvas'), value: url, size: 240 });
+    }
+
+    // Init
+    apply();
+  </script>
+</body>
+</html>
