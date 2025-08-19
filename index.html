@@ -6,412 +6,164 @@
   <title>NTP Xgrid – Projectlinks</title>
   <meta name="description" content="Eenvoudige pagina om links naar Xgrid-projecten te delen." />
   <link rel="icon" href="Logo_NTP.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <!-- UI / Kaart libs -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
   <style>
-    :root { color-scheme: dark; }
-    html, body { height: 100%; }
-    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial; }
-    body {
-      background:
-        radial-gradient(1200px 600px at 20% -10%, rgba(0,174,239,0.18), rgba(0,0,0,0) 40%),
-        radial-gradient(900px 500px at 85% 0%, rgba(124,58,237,0.12), rgba(0,0,0,0) 35%),
-        #0b1220;
-      color: #E6EEF7;
-    }
-    .glass { backdrop-filter: saturate(140%) blur(8px); background: rgba(255,255,255,0.04); }
-    .card { @apply rounded-2xl border border-white/10 overflow-hidden glass shadow-lg transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-cyan-500/20; }
-    .btn { @apply px-3 py-1.5 rounded-xl border text-sm transition-all duration-300 ease-in-out; border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0,255,255,0.05); color: #8bdcff; }
-    .btn:hover { background: rgba(0,255,255,0.15); box-shadow: 0 0 12px rgba(0, 174, 239, 0.6), 0 0 24px rgba(124, 58, 237, 0.3); transform: translateY(-1px) scale(1.02); }
-    .btn-primary { background: linear-gradient(135deg, rgba(0,174,239,0.25), rgba(124,58,237,0.25)); border: 1px solid rgba(0,174,239,0.5); color: #E6EEF7; }
-    .btn-primary:hover { background: linear-gradient(135deg, rgba(0,174,239,0.35), rgba(124,58,237,0.35)); box-shadow: 0 0 15px rgba(0,174,239,0.7), 0 0 30px rgba(124,58,237,0.4); }
-    .chip { @apply text-[11px] px-2 py-0.5 rounded-full border border-white/15; }
-    .thumb { @apply w-full h-40 grid place-items-center text-lg md:text-xl font-semibold tracking-wide text-white; background-image: linear-gradient(135deg, rgba(0,174,239,0.25), rgba(124,58,237,0.18)); border: 1px solid rgba(0,174,239,0.3); box-shadow: inset 0 0 20px rgba(0,174,239,0.2), 0 0 15px rgba(124,58,237,0.25); transition: all 0.4s ease-in-out; }
-    .thumb:hover { box-shadow: inset 0 0 25px rgba(0,174,239,0.35), 0 0 25px rgba(124,58,237,0.5); transform: scale(1.03); }
-    .pill { @apply btn; }
-    .pill.active { @apply ring-2 ring-cyan-400/60; }
-    .topbar { @apply sticky top-0 z-30 border-b border-white/10; background: linear-gradient(to bottom, rgba(11,18,32,0.9), rgba(11,18,32,0.6)); backdrop-filter: blur(10px); }
-    .headline { @apply text-3xl md:text-4xl font-extrabold; background: linear-gradient(90deg,#8bdcff,#ffffff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-    .subtle { color: #9DB3C7; }
-  </style>
-  <!-- Leaflet CSS (voor kaart) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <!-- Leaflet CSS (kaart) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <!-- MarkerCluster CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
-  <style>
-    /* Kleine gekleurde dot-icoon voor markers */
-    .dot { width: 14px; height: 14px; border-radius: 9999px; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 0 10px rgba(0,174,239,0.5); }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif; background:#0b1220; color:#eef4f8; }
+    h1,h2 { color:#e9f7ff; }
+    .wrap { max-width: 72rem; margin: 0 auto; padding: 1rem; }
+    .card { background:rgba(255,255,255,0.06); padding:1rem; border-radius:1rem; margin:0.5rem; border:1px solid rgba(255,255,255,0.08); }
+    .btn { background:#00AEEF22; border:1px solid #00AEEF55; padding:0.35rem 0.7rem; border-radius:0.5rem; cursor:pointer; }
+    .btn:hover { background:#00AEEF44; }
+    .qr { width:60px; height:60px; }
+    #map-wrapper { display:flex; justify-content:center; margin:5rem auto 2rem auto; }
+    #map { width:600px; height:600px; border-radius:16px; box-shadow:0 0 15px rgba(0,174,239,0.3); overflow:hidden; border:1px solid rgba(0,174,239,0.35); background:#0b1220; }
+    .muted { color:#9DB3C7; }
+    /* Fix voor Tailwind die Leaflet-tiles schaalde */
+    .leaflet-container img { max-width: none !important; max-height: none !important; }
+    .leaflet-container .leaflet-tile { max-width: none !important; }
   </style>
 </head>
 <body>
-  <!-- Topbar -->
-  <div class="topbar">
-    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <img src="Logo_NTP.png" alt="NTP" class="h-8 w-auto" />
-        <span class="text-base md:text-lg font-semibold text-cyan-300">NTP Xgrid – Projectlinks</span>
-      </div>
-      <div class="hidden md:flex items-center gap-2">
-        <input id="search" type="search" placeholder="Zoek projecten…" class="w-64 max-w-full px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-sky-50 placeholder:subtle focus:outline-none focus:ring-2 focus:ring-cyan-400/60" />
-        <select id="sort" class="px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-sm">
-          <option value="recent">Meest recent</option>
-          <option value="az">Alfabetisch oplopend</option>
-          <option value="za">Alfabetisch aflopend</option>
-        </select>
-        <a href="#projecten" class="btn btn-primary">Bekijk projecten</a>
-      </div>
-    </div>
+  <h1 class="text-2xl font-bold p-4 text-center">NTP Xgrid – Projectlinks</h1>
+
+  <div class="wrap">
+    <div id="projects" class="grid grid-cols-1 md:grid-cols-2"></div>
   </div>
 
-  <!-- Hero -->
-  <header class="max-w-6xl mx-auto px-6 pt-10 pb-8">
-    <div class="grid md:grid-cols-5 gap-6 items-center">
-      <div class="md:col-span-3">
-        <h1 class="headline">Projectlinks voor geometrie</h1>
-        <p class="mt-3 text-sm md:text-base subtle">Snelle toegang tot projectviewers (zoals Xgrid). Projecten bieden een scan-code om te delen, knoppen om koppelingen te kopiëren en functies om te zoeken en te sorteren.</p>
-        <div class="mt-5 flex items-center gap-2 text-xs">
-          <span class="chip">🔓 Publiek</span>
-          <span class="chip">🔒 Privé</span>
-          <span class="chip">Scan-code • Link kopiëren</span>
-        </div>
-        <div class="mt-6 flex items-center gap-2">
-          <a href="#projecten" class="btn btn-primary">Naar projecten</a>
-          <button id="copyAllTop" class="btn">Kopieer alle koppelingen</button>
-        </div>
-      </div>
-      <div class="md:col-span-2">
-        <div class="rounded-3xl border border-white/10 glass p-5">
-          <div class="thumb rounded-2xl">Projectoverzicht</div>
-          <div class="mt-4 text-xs subtle">NTP • Xgrid projectlinks</div>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main id="projecten" class="max-w-6xl mx-auto px-6 pb-12">
-    <section class="">
-      <div class="flex flex-wrap items-center gap-2 text-sm">
-        <span class="subtle">Filter:</span>
-        <button data-filter="all" class="filter-btn pill active">Alles</button>
-        <button data-filter="public" class="filter-btn pill">Publiek</button>
-        <button data-filter="private" class="filter-btn pill">Privé</button>
-      </div>
-
-      <ul id="list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5"></ul>
-      <div id="empty" class="hidden text-center subtle py-16">Geen resultaten…</div>
-    </section>
-  </main>
-
-  <footer class="border-t border-white/10">
-    <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px] subtle">
-      <p>© NTP • Eenvoudig koppelingen delen • <a class="underline-offset-2 hover:underline" href="#" id="copyAll">Kopieer alle koppelingen</a></p>
-      <p>Tip: voeg deze pagina toe als tabblad in Teams.</p>
-    </div>
-  </footer>
-
-<!-- Kaart-sectie -->
-<section class="max-w-6xl mx-auto px-6 pb-16">
-  <h2 class="text-xl font-semibold mb-3">Projecten op de kaart</h2>
-  <div id="map" style="height: 420px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,174,239,0.35)"></div>
-  <div id="legend" class="mt-2 text-sm subtle"></div>
-  <p class="mt-2 text-sm subtle">Tip: klik op een marker voor details of gebruik “Toon op kaart” bij een project.</p>
-</section>
-
-<!-- Kaart-sectie -->
-<section class="max-w-6xl mx-auto px-6 pb-16">
-  <h2 class="text-xl font-semibold mb-3">Projecten op de kaart</h2>
-  <div id="map" style="height: 420px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,174,239,0.35)"></div>
-  <p class="mt-2 text-sm subtle">Tip: klik op een marker voor details of gebruik “Toon op kaart” bij een project.</p>
-</section>
-
-  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <div id="toast" class="fixed bottom-4 right-4 hidden px-3 py-2 rounded-xl bg-black/80 text-white text-sm shadow">Gekopieerd naar het klembord</div>
+  <h2 class="text-xl font-semibold text-center mt-16">Projecten op de kaart</h2>
+  <div id="map-wrapper">
+    <div id="map" role="region" aria-label="Projectenkaart"></div>
+  </div>
 
   <script>
+  (function(){
+    // ---- Data ----
     const links = [
-      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijkerk", client: "NTP", tags: ["scan", "depot"], visibility: "public", lat: 52.2236767, lng: 5.4610231 },
-      { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", client: "NTP", tags: ["scan"], visibility: "public", lat: 51.9626715, lng: 5.9669338 },
-      { id: "huizen-1", title: "Huizen – Stadenlande 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_1", client: "NTP", tags: ["scan", "huizen"], visibility: "public", lat: 52.2939495, lng: 5.2532121 },
-      { id: "huizen-2", title: "Huizen – Stadenlande 2", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_2", client: "NTP", tags: ["scan", "huizen"], visibility: "public", lat: 52.2883596, lng: 5.2535263 },
-      { id: "doetinchem-1", title: "Doetinchem 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", client: "NTP", tags: ["scan", "doetinchem"], visibility: "public", lat: 51.9595997, lng: 6.2990643 }
+      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijkerk", lat: 52.2236767, lng: 5.4610231 },
+      { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", lat: 51.9626715, lng: 5.9669338 },
+      { id: "huizen-1", title: "Huizen – Stadenlande 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_1", lat: 52.2939495, lng: 5.2532121 },
+      { id: "huizen-2", title: "Huizen – Stadenlande 2", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_2", lat: 52.2883596, lng: 5.2535263 },
+      { id: "doetinchem-1", title: "Doetinchem – 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", lat: 51.9595997, lng: 6.2990643 }
     ];
 
-    const listEl = document.getElementById('list');
-    const emptyEl = document.getElementById('empty');
-    const searchEl = document.getElementById('search');
-    const sortEl = document.getElementById('sort');
-    const toastEl = document.getElementById('toast');
+    // ---- Globals ----
+    let map = null;
+    const markersById = {};
+    let markersReady = false;
 
-    let activeFilter = 'all';
-
-    const toonMelding = (msg) => { toastEl.textContent = msg; toastEl.classList.remove('hidden'); setTimeout(() => toastEl.classList.add('hidden'), 1200); };
-
-    function komtOvereenMetZoekopdracht(item, q) {
-      if (!q) return true;
-      const hay = [item.title, item.client, ...(item.tags||[])].join(' ').toLowerCase();
-      return hay.includes(q.toLowerCase());
+    function focusMarker(id){
+      if (!markersReady || !map) {
+        const frame = document.getElementById('map-wrapper');
+        if (frame && frame.scrollIntoView) frame.scrollIntoView({ behavior:'smooth', block:'center' });
+        return;
+      }
+      const m = markersById[id];
+      if (m) {
+        map.setView(m.getLatLng(), 13);
+        if (m.openPopup) m.openPopup();
+        // Extra zichtbaar punt op het gekozen project
+        L.circleMarker(m.getLatLng(), { radius: 6, color: '#00AEEF', weight: 2, fillColor: '#00AEEF', fillOpacity: 0.85 })
+          .addTo(map).bindPopup('Gekozen project');
+      }
     }
+    window.focusMarker = focusMarker;
 
-    function komtOvereenMetFilter(item) {
-      if (activeFilter === 'all') return true;
-      return (item.visibility || 'public') === activeFilter;
-    }
-
-    function sorteer(items) {
-      const mode = sortEl ? sortEl.value : 'recent';
-      if (mode === 'az') return [...items].sort((a,b) => a.title.localeCompare(b.title));
-      if (mode === 'za') return [...items].sort((a,b) => b.title.localeCompare(a.title));
-      return items;
-    }
-
-    function render(items) {
+    function renderProjects(){
+      const listEl = document.getElementById('projects');
       listEl.innerHTML = '';
-      if (!items.length) { emptyEl.classList.remove('hidden'); return; }
-      emptyEl.classList.add('hidden');
+      links.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const qrId = `qr-${p.id}`;
+        card.innerHTML = `
+          <h3 class='font-semibold'>${p.title}</h3>
+          <div class='mt-2 flex gap-2 items-center'>
+            <a href='${p.url}' target='_blank' rel='noopener noreferrer' class='btn'>Openen</a>
+            <button class='btn' onclick='focusMarker("${p.id}")'>Toon op kaart</button>
+            <canvas id='${qrId}' class='qr'></canvas>
+          </div>`;
+        listEl.appendChild(card);
 
-      const gesorteerd = sorteer(items);
-
-      gesorteerd.forEach((item) => {
-        const li = document.createElement('li');
-        li.className = 'card flex flex-col';
-
-        const thumb = document.createElement('div');
-        thumb.className = 'thumb';
-        const label = (item.title.split(/[–-]/)[0] || item.title).trim();
-        thumb.textContent = label || 'Project';
-        li.appendChild(thumb);
-
-        const content = document.createElement('div');
-        content.className = 'p-4 flex flex-col gap-3 flex-1';
-
-        const header = document.createElement('div');
-        header.className = 'flex items-start justify-between gap-2';
-        const titleWrap = document.createElement('div');
-        titleWrap.className = 'flex items-center gap-2';
-        const h3 = document.createElement('h3');
-        h3.className = 'font-semibold leading-snug';
-        h3.textContent = item.title;
-        titleWrap.append(h3);
-
-        const chip = document.createElement('span');
-        chip.textContent = 'Publiek';
-        chip.className = 'chip';
-
-        header.append(titleWrap, chip);
-        content.appendChild(header);
-
-        if (item.client) {
-          const meta = document.createElement('div');
-          meta.className = 'text-xs subtle';
-          meta.textContent = item.client;
-          content.appendChild(meta);
+        try {
+          new QRious({ element: document.getElementById(qrId), value: p.url, size: 60, background: 'transparent', foreground: '#00AEEF' });
+        } catch(qrErr) {
+          console.warn('QR aanmaak mislukt voor', p.id, qrErr);
         }
-
-        if (item.tags?.length) {
-          const tags = document.createElement('div');
-          tags.className = 'flex flex-wrap gap-1';
-          item.tags.forEach(t => {
-            const s = document.createElement('span');
-            s.textContent = `#${t}`;
-            s.className = 'text-[11px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-200 border border-cyan-400/20';
-            tags.appendChild(s);
-          });
-          content.appendChild(tags);
-        }
-
-        const btnRow = document.createElement('div');
-        btnRow.className = 'mt-1 grid grid-cols-3 gap-2';
-
-        const openBtn = document.createElement('a');
-        openBtn.href = item.url; openBtn.target = '_blank'; openBtn.rel = 'noopener noreferrer';
-        openBtn.textContent = 'Openen';
-        openBtn.className = 'btn btn-primary text-center';
-
-        const copyBtn = document.createElement('button');
-        copyBtn.textContent = 'Kopieer koppeling';
-        copyBtn.className = 'btn';
-        copyBtn.addEventListener('click', async () => { await navigator.clipboard.writeText(item.url); toonMelding('Koppeling gekopieerd naar het klembord');});
-
-        const qrBtn = document.createElement('button');
-        qrBtn.textContent = 'Scan-code';
-        qrBtn.className = 'btn';
-        qrBtn.addEventListener('click', () => toonScanCode(item.url, item.title));
-
-        // Extra knop: toon op kaart
-        const mapBtn = document.createElement('button');
-        mapBtn.textContent = 'Toon op kaart';
-        mapBtn.className = 'btn';
-        mapBtn.addEventListener('click', () => focusMarker(item.id));
-
-        btnRow.append(openBtn, copyBtn, qrBtn);
-        content.appendChild(btnRow);
-
-        const mapRow = document.createElement('div');
-        mapRow.className = 'grid grid-cols-3 gap-2 mt-2';
-        const spacer = document.createElement('div');
-        spacer.className = '';
-        const spacer2 = document.createElement('div');
-        spacer2.className = '';
-        mapRow.append(spacer, spacer2, mapBtn);
-        content.appendChild(mapRow);
-        content.appendChild(btnRow);
-
-        li.appendChild(content);
-        listEl.appendChild(li);
       });
     }
 
-    function apply() {
-      const q = (searchEl && searchEl.value) ? searchEl.value.trim() : '';
-      const filtered = links.filter(it => komtOvereenMetZoekopdracht(it, q) && komtOvereenMetFilter(it));
-      render(filtered);
-    }
-
-    // QR-overlay functie die eerder ontbrak
-    function toonScanCode(url, title) {
-      let overlay = document.getElementById('qrOverlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'qrOverlay';
-        overlay.className = 'fixed inset-0 bg-black/60 grid place-items-center p-6 z-50';
-        overlay.innerHTML = `
-          <div class="glass rounded-2xl p-6 w-full max-w-sm border border-white/10">
-            <div class="flex items-start justify-between mb-4">
-              <h2 class="font-semibold" id="qrTitle"></h2>
-              <button id="qrClose" class="btn">Sluiten</button>
-            </div>
-            <canvas id="qrCanvas" class="mx-auto"></canvas>
-            <p class="mt-3 text-xs subtle text-center">Scan met je telefoon om te openen.</p>
-          </div>`;
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
-        overlay.querySelector('#qrClose').addEventListener('click', () => overlay.remove());
-      }
-      overlay.querySelector('#qrTitle').textContent = title || 'Koppeling';
-      new QRious({ element: overlay.querySelector('#qrCanvas'), value: url, size: 240 });
-    }
-
-    // Init: render direct na laden
-    document.addEventListener('DOMContentLoaded', () => { apply(); initMap(); });
-  </script>
-  <!-- Leaflet JS (voor kaart) -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="">    // ===== Kaart =====
-    let map, markersById = {};
     function initMap(){
-      try {
-        map = L.map('map', { zoomControl: true, scrollWheelZoom: true });
-        map.setView([52.1, 5.3], 8);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
+      if (typeof L === 'undefined') {
+        const el = document.getElementById('map');
+        if (el) el.innerHTML = '<div class="p-4 text-center muted">Kon de interactieve kaart niet laden. Online werkt dit wel.</div>';
+        return;
+      }
+      map = L.map('map', {
+        preferCanvas: true,
+        worldCopyJump: false,
+        updateWhenZooming: true,
+        updateWhenMoving: true,
+        wheelDebounceTime: 16,
+        zoomSnap: 0.25,
+        zoomDelta: 0.25,
+        fadeAnimation: true,
+        zoomAnimation: true,
+        keepBuffer: 20
+      }).setView([52.15, 5.3], 8);
+      // Zorg dat Leaflet de containermaat correct meet na renderen
+      setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 0);
 
-        // Clusterlaag
-        const clusters = L.markerClusterGroup({
-          spiderfyOnEveryZoom: false,
-          showCoverageOnHover: false,
-          maxClusterRadius: 50
-        });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        continuousWorld: true,
+        noWrap: false,
+        attribution: '&copy; OpenStreetMap',
+        updateWhenZooming: true,
+        updateWhenIdle: false,
+        keepBuffer: 20,
+        crossOrigin: true,
+        detectRetina: true
+      }).addTo(map);
 
-        // Kleur per tag
-        const colorFor = (tags=[]) => {
-          const t = tags.map(s=>s.toLowerCase());
-          if (t.includes('depot')) return '#00AEEF';
-          if (t.includes('huizen')) return '#7C3AED';
-          if (t.includes('doetinchem')) return '#22C55E';
-          if (t.includes('scan')) return '#06B6D4';
-          return '#9CA3AF';
-        };
+      // Forceer zichtbare marker-iconen (CDN-paden); voorkomt missende default iconen
+      const defaultIcon = L.icon({
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
 
-        // Maak dot-icon
-        const dotIcon = (color) => L.divIcon({
-          className: '',
-          html: `<div class="dot" style="background:${color}; box-shadow:0 0 10px ${color}55"></div>`,
-          iconSize: [18,18],
-          iconAnchor: [9,9]
-        });
-
-        // Voeg markers toe
-        links.forEach(p => {
-          if(typeof p.lat === 'number' && typeof p.lng === 'number'){
-            const color = colorFor(p.tags);
-            const marker = L.marker([p.lat, p.lng], { icon: dotIcon(color), title: p.title });
-            marker.bindPopup(`<strong>${p.title}</strong><br/><a href="${p.url}" target="_blank" rel="noopener">Open project</a>`);
-            clusters.addLayer(marker);
-            markersById[p.id] = marker;
-          }
-        });
-
-        map.addLayer(clusters);
-
-        // Fit naar alle projecten
-        const coords = links.filter(p => p.lat && p.lng).map(p => [p.lat, p.lng]);
-        if(coords.length){ map.fitBounds(coords, { padding: [20,20] }); }
-
-        // Legenda
-        const legendEl = document.getElementById('legend');
-        if (legendEl) {
-          legendEl.innerHTML = [
-            ['Depot','#00AEEF'], ['Huizen','#7C3AED'], ['Doetinchem','#22C55E'], ['Scan','#06B6D4']
-          ].map(([label,c]) => `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:12px;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:9999px;background:${c};border:2px solid #fff"></span>${label}
-          </span>`).join('');
+      links.forEach(p => {
+        if (p.lat && p.lng){
+          const marker = L.marker([p.lat, p.lng], { icon: defaultIcon }).addTo(map)
+            .bindPopup(`<b>${p.title}</b><br><a href='${p.url}' target='_blank' rel='noopener noreferrer'>Open project</a>`);
+          markersById[p.id] = marker;
         }
-      } catch(e) {
-        console.warn('Kaart kon niet initialiseren:', e);
-        const m = document.getElementById('map');
-        if(m){ m.innerHTML = '<div class="p-4 subtle">Kon de interactieve kaart niet laden (mogelijk door sandbox). Online werkt dit wel. De projectenlijst hieronder blijft beschikbaar.</div>'; }
-      }
+      });
+      markersReady = true;
+
+      // Extra markers blijvend neerzetten bij inzoomen
+      map.on('zoomend', () => {
+        const c = map.getCenter();
+        L.circleMarker(c, { radius: 6, color: '#00AEEF', weight: 2, fillColor: '#00AEEF', fillOpacity: 0.85 })
+          .addTo(map).bindPopup('Zoom-centrum');
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProjects();
+      initMap();
     });
-        // Midden Nederland als start
-        map.setView([52.1, 5.3], 8);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
-
-        // Voeg markers toe
-        links.forEach(p => {
-          if(typeof p.lat === 'number' && typeof p.lng === 'number'){
-            const marker = L.circleMarker([p.lat, p.lng], {
-              radius: 8,
-              weight: 2,
-              color: '#00AEEF',
-              fillColor: '#00AEEF',
-              fillOpacity: 0.25
-            }).addTo(map);
-            marker.bindPopup(`<strong>${p.title}</strong><br/><a href="${p.url}" target="_blank" rel="noopener">Open project</a>`);
-            markersById[p.id] = marker;
-          }
-        });
-
-        // Fit naar alle projecten
-        const coords = links.filter(p => p.lat && p.lng).map(p => [p.lat, p.lng]);
-        if(coords.length){ map.fitBounds(coords, { padding: [20,20] }); }
-      } catch(e) {
-        console.warn('Kaart kon niet initialiseren:', e);
-        const m = document.getElementById('map');
-        if(m){ m.innerHTML = '<div class="p-4 subtle">Kon de interactieve kaart niet laden (mogelijk door sandbox). Online werkt dit wel. De projectenlijst hieronder blijft beschikbaar.</div>'; }
-      }
-    }
-
-    function focusMarker(id){
-      const m = markersById[id];
-      if(m && map){
-        const latlng = m.getLatLng();
-        map.setView(latlng, 13, { animate: true });
-        m.openPopup();
-      }
-    }
+  })();
   </script>
-  <!-- Leaflet JS (kaart) -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <!-- MarkerCluster JS -->
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </body>
 </html>
