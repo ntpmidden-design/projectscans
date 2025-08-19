@@ -36,6 +36,17 @@
     .headline { @apply text-3xl md:text-4xl font-extrabold; background: linear-gradient(90deg,#8bdcff,#ffffff); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .subtle { color: #9DB3C7; }
   </style>
+  <!-- Leaflet CSS (voor kaart) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Leaflet CSS (kaart) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  <style>
+    /* Kleine gekleurde dot-icoon voor markers */
+    .dot { width: 14px; height: 14px; border-radius: 9999px; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 0 10px rgba(0,174,239,0.5); }
+  </style>
 </head>
 <body>
   <!-- Topbar -->
@@ -103,16 +114,31 @@
     </div>
   </footer>
 
+<!-- Kaart-sectie -->
+<section class="max-w-6xl mx-auto px-6 pb-16">
+  <h2 class="text-xl font-semibold mb-3">Projecten op de kaart</h2>
+  <div id="map" style="height: 420px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,174,239,0.35)"></div>
+  <div id="legend" class="mt-2 text-sm subtle"></div>
+  <p class="mt-2 text-sm subtle">Tip: klik op een marker voor details of gebruik “Toon op kaart” bij een project.</p>
+</section>
+
+<!-- Kaart-sectie -->
+<section class="max-w-6xl mx-auto px-6 pb-16">
+  <h2 class="text-xl font-semibold mb-3">Projecten op de kaart</h2>
+  <div id="map" style="height: 420px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(0,174,239,0.35)"></div>
+  <p class="mt-2 text-sm subtle">Tip: klik op een marker voor details of gebruik “Toon op kaart” bij een project.</p>
+</section>
+
   <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <div id="toast" class="fixed bottom-4 right-4 hidden px-3 py-2 rounded-xl bg-black/80 text-white text-sm shadow">Gekopieerd naar het klembord</div>
 
   <script>
     const links = [
-      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijkerk", client: "NTP", tags: ["scan", "depot"], visibility: "public" },
-      { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", client: "NTP", tags: ["scan"], visibility: "public" },
-      { id: "huizen-1", title: "Huizen – Stadenlande 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_1", client: "NTP", tags: ["scan", "huizen"], visibility: "public" },
-      { id: "huizen-2", title: "Huizen – Stadenlande 2", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_2", client: "NTP", tags: ["scan", "huizen"], visibility: "public" },
-      { id: "doetinchem-1", title: "Doetinchem 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", client: "NTP", tags: ["scan", "doetinchem"], visibility: "public" }
+      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijkerk", client: "NTP", tags: ["scan", "depot"], visibility: "public", lat: 52.2236767, lng: 5.4610231 },
+      { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", client: "NTP", tags: ["scan"], visibility: "public", lat: 51.9626715, lng: 5.9669338 },
+      { id: "huizen-1", title: "Huizen – Stadenlande 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_1", client: "NTP", tags: ["scan", "huizen"], visibility: "public", lat: 52.2939495, lng: 5.2532121 },
+      { id: "huizen-2", title: "Huizen – Stadenlande 2", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_2", client: "NTP", tags: ["scan", "huizen"], visibility: "public", lat: 52.2883596, lng: 5.2535263 },
+      { id: "doetinchem-1", title: "Doetinchem 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", client: "NTP", tags: ["scan", "doetinchem"], visibility: "public", lat: 51.9595997, lng: 6.2990643 }
     ];
 
     const listEl = document.getElementById('list');
@@ -216,7 +242,23 @@
         qrBtn.className = 'btn';
         qrBtn.addEventListener('click', () => toonScanCode(item.url, item.title));
 
+        // Extra knop: toon op kaart
+        const mapBtn = document.createElement('button');
+        mapBtn.textContent = 'Toon op kaart';
+        mapBtn.className = 'btn';
+        mapBtn.addEventListener('click', () => focusMarker(item.id));
+
         btnRow.append(openBtn, copyBtn, qrBtn);
+        content.appendChild(btnRow);
+
+        const mapRow = document.createElement('div');
+        mapRow.className = 'grid grid-cols-3 gap-2 mt-2';
+        const spacer = document.createElement('div');
+        spacer.className = '';
+        const spacer2 = document.createElement('div');
+        spacer2.className = '';
+        mapRow.append(spacer, spacer2, mapBtn);
+        content.appendChild(mapRow);
         content.appendChild(btnRow);
 
         li.appendChild(content);
@@ -255,7 +297,121 @@
     }
 
     // Init: render direct na laden
-    document.addEventListener('DOMContentLoaded', apply);
+    document.addEventListener('DOMContentLoaded', () => { apply(); initMap(); });
   </script>
+  <!-- Leaflet JS (voor kaart) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="">    // ===== Kaart =====
+    let map, markersById = {};
+    function initMap(){
+      try {
+        map = L.map('map', { zoomControl: true, scrollWheelZoom: true });
+        map.setView([52.1, 5.3], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // Clusterlaag
+        const clusters = L.markerClusterGroup({
+          spiderfyOnEveryZoom: false,
+          showCoverageOnHover: false,
+          maxClusterRadius: 50
+        });
+
+        // Kleur per tag
+        const colorFor = (tags=[]) => {
+          const t = tags.map(s=>s.toLowerCase());
+          if (t.includes('depot')) return '#00AEEF';
+          if (t.includes('huizen')) return '#7C3AED';
+          if (t.includes('doetinchem')) return '#22C55E';
+          if (t.includes('scan')) return '#06B6D4';
+          return '#9CA3AF';
+        };
+
+        // Maak dot-icon
+        const dotIcon = (color) => L.divIcon({
+          className: '',
+          html: `<div class="dot" style="background:${color}; box-shadow:0 0 10px ${color}55"></div>`,
+          iconSize: [18,18],
+          iconAnchor: [9,9]
+        });
+
+        // Voeg markers toe
+        links.forEach(p => {
+          if(typeof p.lat === 'number' && typeof p.lng === 'number'){
+            const color = colorFor(p.tags);
+            const marker = L.marker([p.lat, p.lng], { icon: dotIcon(color), title: p.title });
+            marker.bindPopup(`<strong>${p.title}</strong><br/><a href="${p.url}" target="_blank" rel="noopener">Open project</a>`);
+            clusters.addLayer(marker);
+            markersById[p.id] = marker;
+          }
+        });
+
+        map.addLayer(clusters);
+
+        // Fit naar alle projecten
+        const coords = links.filter(p => p.lat && p.lng).map(p => [p.lat, p.lng]);
+        if(coords.length){ map.fitBounds(coords, { padding: [20,20] }); }
+
+        // Legenda
+        const legendEl = document.getElementById('legend');
+        if (legendEl) {
+          legendEl.innerHTML = [
+            ['Depot','#00AEEF'], ['Huizen','#7C3AED'], ['Doetinchem','#22C55E'], ['Scan','#06B6D4']
+          ].map(([label,c]) => `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:12px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:9999px;background:${c};border:2px solid #fff"></span>${label}
+          </span>`).join('');
+        }
+      } catch(e) {
+        console.warn('Kaart kon niet initialiseren:', e);
+        const m = document.getElementById('map');
+        if(m){ m.innerHTML = '<div class="p-4 subtle">Kon de interactieve kaart niet laden (mogelijk door sandbox). Online werkt dit wel. De projectenlijst hieronder blijft beschikbaar.</div>'; }
+      }
+    });
+        // Midden Nederland als start
+        map.setView([52.1, 5.3], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // Voeg markers toe
+        links.forEach(p => {
+          if(typeof p.lat === 'number' && typeof p.lng === 'number'){
+            const marker = L.circleMarker([p.lat, p.lng], {
+              radius: 8,
+              weight: 2,
+              color: '#00AEEF',
+              fillColor: '#00AEEF',
+              fillOpacity: 0.25
+            }).addTo(map);
+            marker.bindPopup(`<strong>${p.title}</strong><br/><a href="${p.url}" target="_blank" rel="noopener">Open project</a>`);
+            markersById[p.id] = marker;
+          }
+        });
+
+        // Fit naar alle projecten
+        const coords = links.filter(p => p.lat && p.lng).map(p => [p.lat, p.lng]);
+        if(coords.length){ map.fitBounds(coords, { padding: [20,20] }); }
+      } catch(e) {
+        console.warn('Kaart kon niet initialiseren:', e);
+        const m = document.getElementById('map');
+        if(m){ m.innerHTML = '<div class="p-4 subtle">Kon de interactieve kaart niet laden (mogelijk door sandbox). Online werkt dit wel. De projectenlijst hieronder blijft beschikbaar.</div>'; }
+      }
+    }
+
+    function focusMarker(id){
+      const m = markersById[id];
+      if(m && map){
+        const latlng = m.getLatLng();
+        map.setView(latlng, 13, { animate: true });
+        m.openPopup();
+      }
+    }
+  </script>
+  <!-- Leaflet JS (kaart) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </body>
 </html>
