@@ -58,7 +58,9 @@
   .card .content{padding:1rem;font-weight:400}
   .card:hover{transform:translateY(-4px);box-shadow:0 4px 14px rgba(2,6,23,.08)}
 
-  .card::before{content:"";display:block;aspect-ratio:16/9;background:linear-gradient(135deg, #e6f9ff 0%, #f2fbff 40%, #ffffff 100%)}
+  .card.has-thumb::before{display:none}
+  .thumb{display:block;width:100%;aspect-ratio:16/9;border:0;overflow:hidden;background:#f1f5f9;border-bottom:1px solid var(--card-border)}
+  .thumb[disabled], .thumb.osm{pointer-events:none}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:8px;padding:.55rem .9rem;font-weight:500;border:1px solid var(--card-border);background:#fff;color:var(--text);text-decoration:none;transition:all .2s}
   .btn:hover{border-color:var(--ntp-cyan);color:var(--ntp-cyan)}
@@ -109,6 +111,18 @@
 
   <script>
   (function(){
+    // Thumbnails via OpenStreetMap embed (geen API key nodig)
+    function osmEmbedUrl(lat, lng, spanDeg=0.01){
+      const dLat = spanDeg;
+      const dLng = spanDeg * Math.max(0.5, Math.cos(lat * Math.PI/180));
+      const minLat = (lat - dLat).toFixed(6);
+      const maxLat = (lat + dLat).toFixed(6);
+      const minLng = (lng - dLng).toFixed(6);
+      const maxLng = (lng + dLng).toFixed(6);
+      const bbox = `${minLng}%2C${minLat}%2C${maxLng}%2C${maxLat}`;
+      return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
+    }
+
     const links = [
       { id: "apeldoorn-wilhelmina", title: "Apeldoorn – Wilhelmina Druckerstraat", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-wilhelmina_druckerstraat", lat: 52.211653, lng: 5.9548165 },
       { id: "doetinchem-1", title: "Doetinchem – 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", lat: 51.9595997, lng: 6.2990643 },
@@ -143,7 +157,7 @@
       listEl.innerHTML = '';
       links.forEach(p => {
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'card has-thumb';
         const qrId = `qr-${p.id}`;
         card.innerHTML = `
           <div class='content'>
@@ -155,6 +169,15 @@
             </div>
           </div>`;
         listEl.appendChild(card);
+        // Thumbnail bovenaan de card (OpenStreetMap embed)
+        const iframe = document.createElement('iframe');
+        iframe.className = 'thumb osm';
+        iframe.loading = 'lazy';
+        iframe.referrerPolicy = 'no-referrer';
+        iframe.setAttribute('aria-hidden','true');
+        iframe.setAttribute('tabindex','-1');
+        iframe.src = osmEmbedUrl(p.lat, p.lng, 0.012);
+        card.prepend(iframe);
 
         try {
           new QRious({ element: document.getElementById(qrId), value: p.url, size: 60, background: 'transparent', foreground: '#00AEEF' });
