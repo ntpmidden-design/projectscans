@@ -7,6 +7,11 @@
   <meta name="description" content="Eenvoudige pagina om links naar Xgrid-projecten te delen." />
   <link rel="icon" href="Logo_NTP.png" />
 
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
   <!-- UI / Kaart libs -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -14,23 +19,84 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif; background:#0b1220; color:#eef4f8; }
-    h1,h2 { color:#e9f7ff; }
-    .wrap { max-width: 72rem; margin: 0 auto; padding: 1rem; }
-    .card { background:rgba(255,255,255,0.06); padding:1rem; border-radius:1rem; margin:0.5rem; border:1px solid rgba(255,255,255,0.08); }
-    .btn { background:#00AEEF22; border:1px solid #00AEEF55; padding:0.35rem 0.7rem; border-radius:0.5rem; cursor:pointer; }
-    .btn:hover { background:#00AEEF44; }
-    .qr { width:60px; height:60px; }
-    #map-wrapper { display:flex; justify-content:center; margin:5rem auto 2rem auto; }
-    #map { width:600px; height:600px; border-radius:16px; box-shadow:0 0 15px rgba(0,174,239,0.3); overflow:hidden; border:1px solid rgba(0,174,239,0.35); background:#0b1220; }
-    .muted { color:#9DB3C7; }
-    /* Fix voor Tailwind die Leaflet-tiles schaalde */
-    .leaflet-container img { max-width: none !important; max-height: none !important; }
-    .leaflet-container .leaflet-tile { max-width: none !important; }
+  :root{
+    --ntp-cyan:#00AEEF;
+    --text:#0f172a;
+    --muted:#475569;
+    --bg:#ffffff;
+    --card:#ffffff;
+    --card-border:#e5e7eb;
+  }
+  html,body{background:var(--bg);color:var(--text);font-family:'Roboto', ui-sans-serif, system-ui; font-weight:400;}
+  a{color:var(--ntp-cyan);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:3px}
+
+  .hero{padding:2rem 1rem 2rem;border-bottom:1px solid var(--card-border);background:linear-gradient(180deg,#f8fafc 0%,#ffffff 100%);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .hero .wrap{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;width:100%;}
+  .hero-left{display:flex;align-items:center;gap:1rem}
+  .hero-left img{height:50px}
+  .hero-text nav{font-size:.875rem;color:var(--muted);font-weight:300}
+  .hero-text .pagetitle{font-size:2rem;line-height:1.2;margin-top:.25rem;font-weight:700}
+  .hero-text .subtle{color:var(--muted);font-weight:300}
+
+  .filters{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;justify-content:space-between;margin:1rem 0 1.25rem;font-weight:300}
+  .tabs{display:inline-flex;border:1px solid var(--card-border);border-radius:10px;overflow:hidden}
+  .tab{padding:.5rem .9rem;font-weight:500;border-right:1px solid var(--card-border);background:#fff;cursor:pointer;transition:background .2s}
+  .tab:last-child{border-right:none}
+  .tab.is-active{background:var(--ntp-cyan);color:#fff;font-weight:600}
+  .tab:hover:not(.is-active){background:#f1f5f9}
+
+  #projects{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
+  @media (max-width: 1024px){#projects{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width: 640px){#projects{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(2,6,23,.04);transition:transform .2s, box-shadow .2s}
+  .card h3{font-size:1.05rem;margin:0;font-weight:500;position:relative;display:inline-block}
+  .card h3::after{content:"";position:absolute;left:0;bottom:-4px;width:100%;height:2px;background:var(--ntp-cyan);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+  .card:hover h3::after{transform:scaleX(1)}
+  .card .meta{font-size:.85rem;color:var(--muted);font-weight:300}
+  .card .content{padding:1rem;font-weight:400}
+  .card:hover{transform:translateY(-4px);box-shadow:0 4px 14px rgba(2,6,23,.08)}
+
+  .card::before{content:"";display:block;aspect-ratio:16/9;background:linear-gradient(135deg, #e6f9ff 0%, #f2fbff 40%, #ffffff 100%)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:8px;padding:.55rem .9rem;font-weight:500;border:1px solid var(--card-border);background:#fff;color:var(--text);text-decoration:none;transition:all .2s}
+  .btn:hover{border-color:var(--ntp-cyan);color:var(--ntp-cyan)}
+  .btn-primary{background:var(--ntp-cyan);border-color:transparent;color:#fff;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .btn-primary:hover{filter:brightness(.95);box-shadow:0 3px 6px rgba(0,0,0,.12)}
+  .btn-link{border:none;background:transparent;color:var(--ntp-cyan);padding:0;font-weight:400}
+
+  .qr{width:60px;height:60px;border:1px solid var(--card-border);border-radius:8px;background:#fff}
+
+  #map-wrapper{display:flex;justify-content:center;margin:3rem auto 2rem}
+  #map{width:900px;max-width:100%;height:520px;border-radius:14px;border:1px solid var(--card-border);box-shadow:0 2px 12px rgba(2,6,23,.06);overflow:hidden}
+
+  .leaflet-container img { max-width: none !important; max-height: none !important; }
+  .leaflet-container .leaflet-tile { max-width: none !important; }
   </style>
 </head>
 <body>
-  <h1 class="text-2xl font-bold p-4 text-center">NTP Xgrid – Projectlinks</h1>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-left">
+        <img src="Logo_NTP.png" alt="NTP Logo" />
+        <div class="hero-text">
+          <nav class="breadcrumb">
+            <a href="#">Home</a><span class="sep">/</span><span>Projecten</span>
+          </nav>
+          <h1 class="pagetitle">Projecten op een rij</h1>
+          <p class="subtle">Bekijk onze recente projecten. Filter op projectstatus of categorie.</p>
+        </div>
+      </div>
+      <div class="filters">
+        <div class="tabs" role="tablist" aria-label="Weergave">
+          <button class="tab is-active" role="tab" aria-selected="true">Lijst</button>
+          <button class="tab" role="tab" aria-selected="false" onclick="document.getElementById('map').scrollIntoView({behavior:'smooth'})">Kaart</button>
+        </div>
+        <div class="subtle">Jouw Xgrid-projecten</div>
+      </div>
+    </div>
+  </section>
 
   <div class="wrap">
     <div id="projects" class="grid grid-cols-1 md:grid-cols-2"></div>
@@ -43,16 +109,16 @@
 
   <script>
   (function(){
-    // ---- Data ----
     const links = [
-      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijkerk", lat: 52.2236767, lng: 5.4610231 },
-      { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", lat: 51.9626715, lng: 5.9669338 },
+      { id: "apeldoorn-wilhelmina", title: "Apeldoorn – Wilhelmina Druckerstraat", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-wilhelmina_druckerstraat", lat: 52.211653, lng: 5.9548165 },
+      { id: "doetinchem-1", title: "Doetinchem – 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", lat: 51.9595997, lng: 6.2990643 },
       { id: "huizen-1", title: "Huizen – Stadenlande 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_1", lat: 52.2939495, lng: 5.2532121 },
       { id: "huizen-2", title: "Huizen – Stadenlande 2", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-huizen_stadenlande_2", lat: 52.2883596, lng: 5.2535263 },
-      { id: "doetinchem-1", title: "Doetinchem – 1", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-doetinchem_1", lat: 51.9595997, lng: 6.2990643 }
+      { id: "nijkerk-camperbuurt", title: "Nijkerk – Camperbuurt", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-camperbuurt", lat: 52.2302263, lng: 5.4890607 },
+      { id: "nijkerk-depot", title: "Nijkerk – Depot", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-depot_nijkerk", lat: 52.2236767, lng: 5.4610231 },
+      { id: "westervoort", title: "Westervoort", url: "https://lcc-viewer.xgrids.com/pub/dbmahu-westervoort", lat: 51.9626715, lng: 5.9669338 }
     ];
 
-    // ---- Globals ----
     let map = null;
     const markersById = {};
     let markersReady = false;
@@ -67,9 +133,7 @@
       if (m) {
         map.setView(m.getLatLng(), 13);
         if (m.openPopup) m.openPopup();
-        // Extra zichtbaar punt op het gekozen project
-        L.circleMarker(m.getLatLng(), { radius: 6, color: '#00AEEF', weight: 2, fillColor: '#00AEEF', fillOpacity: 0.85 })
-          .addTo(map).bindPopup('Gekozen project');
+        L.circleMarker(m.getLatLng(), { radius: 6, color: '#00AEEF', weight: 2, fillColor: '#00AEEF', fillOpacity: 0.85 }).addTo(map).bindPopup('Gekozen project');
       }
     }
     window.focusMarker = focusMarker;
@@ -82,11 +146,13 @@
         card.className = 'card';
         const qrId = `qr-${p.id}`;
         card.innerHTML = `
-          <h3 class='font-semibold'>${p.title}</h3>
-          <div class='mt-2 flex gap-2 items-center'>
-            <a href='${p.url}' target='_blank' rel='noopener noreferrer' class='btn'>Openen</a>
-            <button class='btn' onclick='focusMarker("${p.id}")'>Toon op kaart</button>
-            <canvas id='${qrId}' class='qr'></canvas>
+          <div class='content'>
+            <h3>${p.title}</h3>
+            <div class='mt-2 flex gap-2 items-center'>
+              <a href='${p.url}' target='_blank' rel='noopener noreferrer' class='btn btn-primary'>Openen</a>
+              <button class='btn' onclick='focusMarker("${p.id}")'>Toon op kaart</button>
+              <canvas id='${qrId}' class='qr'></canvas>
+            </div>
           </div>`;
         listEl.appendChild(card);
 
@@ -116,7 +182,6 @@
         zoomAnimation: true,
         keepBuffer: 20
       }).setView([52.15, 5.3], 8);
-      // Zorg dat Leaflet de containermaat correct meet na renderen
       setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 0);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -131,7 +196,6 @@
         detectRetina: true
       }).addTo(map);
 
-      // Forceer zichtbare marker-iconen (CDN-paden); voorkomt missende default iconen
       const defaultIcon = L.icon({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -150,13 +214,6 @@
         }
       });
       markersReady = true;
-
-      // Extra markers blijvend neerzetten bij inzoomen
-      map.on('zoomend', () => {
-        const c = map.getCenter();
-        L.circleMarker(c, { radius: 6, color: '#00AEEF', weight: 2, fillColor: '#00AEEF', fillOpacity: 0.85 })
-          .addTo(map).bindPopup('Zoom-centrum');
-      });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
