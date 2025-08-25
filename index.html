@@ -13,7 +13,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 
   <!-- UI / Kaart libs -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">    // --- Active nav link op basis van scrollpositie ---
+    const nav = document.getElementById('mainmenu');
+    const links = Array.from(nav.querySelectorAll('a[href^="#"]'));
+    const mapById = new Map(links.map(a=>[a.getAttribute('href').slice(1), a]));
+
+    const obs = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        const id = e.target.id;
+        const a = mapById.get(id);
+        if(!a) return;
+        if(e.isIntersecting){
+          links.forEach(x=>x.classList.remove('is-active'));
+          a.classList.add('is-active');
+          a.setAttribute('aria-current','page');
+        }
+      });
+    }, {root:null, rootMargin:'-50% 0px -45% 0px', threshold:0});
+
+    ['gis','fme','scan','vgis','ai'].forEach(id=>{ const s=document.getElementById(id); if(s) obs.observe(s); });
+
+    // Sluit mobiele menu na klik
+    links.forEach(a=>a.addEventListener('click', ()=>{
+      const menu = document.getElementById('mainmenu');
+      const hamb = document.querySelector('.hamb');
+      if(menu && menu.classList.contains('open')){ menu.classList.remove('open'); if(hamb) hamb.setAttribute('aria-expanded','false'); }
+    }));
+  </script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
@@ -75,9 +101,61 @@
 
   .leaflet-container img { max-width: none !important; max-height: none !important; }
   .leaflet-container .leaflet-tile { max-width: none !important; }
+    html { scroll-behavior: smooth; }
+  /* Smooth scrolling en nette anchor-offset */
+  html{scroll-behavior:smooth}
+  .section{scroll-margin-top:140px}
+
+  /* Nav-underline animatie + actieve staat */
+  .nav-menu a{position:relative}
+  .nav-menu a::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;background:var(--ntp-cyan);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+  .nav-menu a:hover::after{transform:scaleX(1)}
+  .nav-menu a.is-active{color:var(--ntp-cyan)}
+  .nav-menu a.is-active::after{transform:scaleX(1)}
+</style>
+  <style>
+    /* --- Top navigatie zoals ntp.nl (licht, responsive) --- */
+    .topnav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--card-border)}
+    .topnav .inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;gap:1rem}
+    .topnav .brand{display:flex;align-items:center;gap:.75rem;text-decoration:none}
+    .topnav .brand img{height:40px}
+    .topnav .brand span{font-weight:700;color:var(--text)}
+    .nav-menu{display:flex;align-items:center;gap:1.25rem}
+    .nav-menu a{color:var(--text);text-decoration:none;font-weight:500;padding:.35rem .25rem;border-radius:6px}
+    .nav-menu a:hover{color:var(--ntp-cyan);background:#f1f5f9}
+    .hamb{display:none;background:none;border:none;padding:.4rem;border-radius:6px}
+    .hamb:focus{outline:2px solid var(--ntp-cyan)}
+    @media (max-width:900px){
+      .nav-menu{display:none;position:absolute;left:0;right:0;top:60px;background:#fff;border-bottom:1px solid var(--card-border);flex-direction:column;align-items:flex-start;padding:1rem}
+      .nav-menu.open{display:flex}
+      .hamb{display:inline-flex}
+    }
   </style>
 </head>
 <body>
+  <!-- Hoofdpagina logo -->
+  <div style="text-align:center; padding:1.5rem 0; border-bottom:1px solid var(--card-border); background:#fff;">
+    <img src="NTP_GeoLoket_logo.png" alt="NTP GeoLoket" style="height:100px; width:auto;"/>
+  </div>
+  <!-- Top navigatie -->
+  <header class="topnav" role="banner">
+    <div class="inner">
+      <a class="brand" href="#" aria-label="NTP Home">
+        <img src="Logo_NTP.png" alt="NTP"/>
+        <span>NTP</span>
+      </a>
+      <nav aria-label="Hoofdmenu">
+        <button class="hamb" aria-expanded="false" aria-controls="mainmenu" onclick="(function(b){var m=document.getElementById('mainmenu');var o=m.classList.toggle('open');b.setAttribute('aria-expanded',o);})(this)">☰</button>
+        <div id=\"mainmenu\" class=\"nav-menu\">
+          <a href=\"#gis\">GIS</a>
+          <a href=\"#fme\">FME</a>
+          <a href=\"#scan\">SCAN</a>
+          <a href=\"#vgis\">VGIS</a>
+          <a href=\"#ai\">AI</a>
+        </div>
+      </nav>
+    </div>
+  </header>
   <section class="hero">
     <div class="wrap">
       <div class="hero-left">
@@ -100,6 +178,7 @@
     </div>
   </section>
 
+  <section id="scan" class="section">
   <div class="wrap">
     <div id="projects" class="grid grid-cols-1 md:grid-cols-2"></div>
   </div>
@@ -245,5 +324,26 @@
     });
   })();
   </script>
+  <!-- Voorbeeldsecties voor lege onderdelen -->
+  <section id="gis" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">GIS</h2>
+    <p class="subtle">Voorbeeldpagina GIS – inhoud volgt.</p>
+  </section>
+
+  <section id="fme" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">FME</h2>
+    <p class="subtle">Voorbeeldpagina FME – inhoud volgt.</p>
+  </section>
+
+  <section id="vgis" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">VGIS</h2>
+    <p class="subtle">Voorbeeldpagina VGIS – inhoud volgt.</p>
+  </section>
+
+  <section id="ai" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">AI</h2>
+    <p class="subtle">Voorbeeldpagina AI – inhoud volgt.</p>
+  </section>
+
 </body>
 </html>
