@@ -31,7 +31,7 @@
       });
     }, {root:null, rootMargin:'-50% 0px -45% 0px', threshold:0});
 
-    ['gis','fme','scan','vgis','ai'].forEach(id=>{ const s=document.getElementById(id); if(s) obs.observe(s); });
+    ['gis','fme','scan','vgis','ai','nieuws','contact'].forEach(id=>{ const s=document.getElementById(id); if(s) obs.observe(s); });
 
     // Sluit mobiele menu na klik
     links.forEach(a=>a.addEventListener('click', ()=>{
@@ -114,23 +114,36 @@
   .nav-menu a.is-active::after{transform:scaleX(1)}
 </style>
   <style>
-    /* --- Top navigatie zoals ntp.nl (licht, responsive) --- */
-    .topnav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--card-border)}
-    .topnav .inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;gap:1rem}
-    .topnav .brand{display:flex;align-items:center;gap:.75rem;text-decoration:none}
-    .topnav .brand img{height:40px}
-    .topnav .brand span{font-weight:700;color:var(--text)}
-    .nav-menu{display:flex;align-items:center;gap:1.25rem}
-    .nav-menu a{color:var(--text);text-decoration:none;font-weight:500;padding:.35rem .25rem;border-radius:6px}
-    .nav-menu a:hover{color:var(--ntp-cyan);background:#f1f5f9}
-    .hamb{display:none;background:none;border:none;padding:.4rem;border-radius:6px}
-    .hamb:focus{outline:2px solid var(--ntp-cyan)}
-    @media (max-width:900px){
-      .nav-menu{display:none;position:absolute;left:0;right:0;top:60px;background:#fff;border-bottom:1px solid var(--card-border);flex-direction:column;align-items:flex-start;padding:1rem}
-      .nav-menu.open{display:flex}
-      .hamb{display:inline-flex}
-    }
-  </style>
+      /* --- Top navigatie in 2 rijen zoals voorbeeld --- */
+  .topbar{position:sticky;top:0;z-index:60;background:#fff;border-bottom:1px solid var(--card-border)}
+  .topbar .row{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;gap:1rem}
+  .brand-wrap{display:flex;align-items:center;gap:.75rem}
+  .brand-wrap img{height:28px}
+  .brand-title{display:flex;flex-direction:column;line-height:1}
+  .brand-title .name{font-weight:700;letter-spacing:.02em}
+  .brand-title .tag{font-size:.8rem;color:var(--muted);white-space:nowrap}
+  .tools{display:flex;align-items:center;gap:1.25rem;font-size:.8rem;color:var(--muted)}
+  .tools a{color:inherit;text-decoration:none}
+  .tools .lang{letter-spacing:.15em}
+
+  .subnav{border-top:1px solid var(--card-border);}
+  .subnav .row{gap:2rem}
+  .menu-left,.menu-right{display:flex;align-items:center;gap:2rem}
+  .menu-left a,.menu-right a{font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text);text-decoration:none;padding:.6rem .25rem;border-bottom:2px solid transparent}
+  .menu-left a:hover,.menu-right a:hover{border-color:var(--ntp-cyan);color:var(--ntp-cyan)}
+
+  /* mobiel */
+  .hamb{display:none}
+  @media (max-width: 900px){
+    .subnav .row{justify-content:space-between}
+    .menu-left,.menu-right{display:none}
+    .hamb{display:inline-flex;gap:.5rem;align-items:center;border:1px solid var(--card-border);border-radius:8px;padding:.4rem .6rem;background:#fff}
+    .hamb[aria-expanded="true"]{border-color:var(--ntp-cyan)}
+    .menus{display:none;padding:.25rem 1rem 1rem}
+    .menus.open{display:block}
+    .menus a{display:block;padding:.6rem 0;border-bottom:1px solid var(--card-border);text-transform:uppercase;font-weight:700;color:var(--text);text-decoration:none}
+  }
+</style>
 </head>
 <body>
   <!-- Hoofdpagina logo -->
@@ -138,24 +151,46 @@
     <img src="NTP_GeoLoket_logo.png" alt="NTP GeoLoket" style="height:100px; width:auto;"/>
   </div>
   <!-- Top navigatie -->
-  <header class="topnav" role="banner">
-    <div class="inner">
-      <a class="brand" href="#" aria-label="NTP Home">
-        <img src="Logo_NTP.png" alt="NTP"/>
-        <span>NTP</span>
-      </a>
-      <nav aria-label="Hoofdmenu">
-        <button class="hamb" aria-expanded="false" aria-controls="mainmenu" onclick="(function(b){var m=document.getElementById('mainmenu');var o=m.classList.toggle('open');b.setAttribute('aria-expanded',o);})(this)">☰</button>
-        <div id=\"mainmenu\" class=\"nav-menu\">
-          <a href=\"#gis\">GIS</a>
-          <a href=\"#fme\">FME</a>
-          <a href=\"#scan\">SCAN</a>
-          <a href=\"#vgis\">VGIS</a>
-          <a href=\"#ai\">AI</a>
-        </div>
-      </nav>
+  <header class="topbar" role="banner">
+  <div class="row">
+    <div class="brand-wrap">
+      <img src="Logo_NTP.png" alt="NTP"/>
+      <div class="brand-title">
+        <span class="name">GEOLOKET</span>
+        <span class="tag">Nauwkeurig · Toepasbaar · Praktisch</span>
+      </div>
     </div>
-  </header>
+    <div class="tools">
+      <a href="#" aria-label="Zoeken">Zoeken</a>
+      <span class="lang" aria-label="Taal">DE&nbsp; NL</span>
+    </div>
+  </div>
+  <div class="subnav">
+    <div class="row">
+      <nav class="menu-left" aria-label="Hoofdmenu">
+        <a href="#gis">GIS</a>
+        <a href="#fme">FME</a>
+        <a href="#scan">SCAN</a>
+        <a href="#vgis">VGIS</a>
+        <a href="#ai">AI</a>
+      </nav>
+      <nav class="menu-right" aria-label="Secundair menu">
+        <a href="#nieuws">Nieuws</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <button class="hamb" aria-expanded="false" aria-controls="menus" onclick="(function(btn){var m=document.getElementById('menus');var o=m.classList.toggle('open');btn.setAttribute('aria-expanded',o);})(this)">Menu ▾</button>
+    </div>
+    <div id="menus" class="menus">
+      <a href="#gis">GIS</a>
+      <a href="#fme">FME</a>
+      <a href="#scan">SCAN</a>
+      <a href="#vgis">VGIS</a>
+      <a href="#ai">AI</a>
+      <a href="#nieuws">Nieuws</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</header>
   <section class="hero">
     <div class="wrap">
       <div class="hero-left">
@@ -343,6 +378,27 @@
   <section id="ai" class="section" style="padding:4rem 1rem;text-align:center;">
     <h2 class="text-2xl font-semibold mb-4">AI</h2>
     <p class="subtle">Voorbeeldpagina AI – inhoud volgt.</p>
+  </section>
+
+  <section id="nieuws" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">Nieuws</h2>
+    <p class="subtle">Voorbeeldpagina Nieuws – inhoud volgt.</p>
+  </section>
+
+  <section id="contact" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">Contact</h2>
+    <p class="subtle">Voorbeeldpagina Contact – inhoud volgt.</p>
+  </section>
+
+  <!-- Voorbeeldsecties voor Nieuws en Contact -->
+  <section id="nieuws" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">Nieuws</h2>
+    <p class="subtle">Hier komen updates en nieuwsberichten. (Voorbeeldsectie)</p>
+  </section>
+
+  <section id="contact" class="section" style="padding:4rem 1rem;text-align:center;">
+    <h2 class="text-2xl font-semibold mb-4">Contact</h2>
+    <p class="subtle">Neem contact op met het NTP GeoLoket-team. (Voorbeeldsectie)</p>
   </section>
 
 </body>
